@@ -17,17 +17,18 @@
  ********************************************************************
  */
 
-include_once "Services/Cron/classes/class.ilCronJob.php";
 
 /**
+ * @ilCtrl_isCalledBy ilCronStatusMonitorCronJob: ilObjComponentSettingsGUI
+ *
  * Class ilCronStatusMonitorCronJob
  * @author Thomas Famula <famula@leifos.de>
  */
 class ilCronStatusMonitorCronJob extends ilCronJob
 {
-    protected $plugin;
+    protected ilCronStatusMonitorPlugin $plugin;
 
-    public function __construct($plugin)
+    public function __construct(ilCronStatusMonitorPlugin $plugin)
     {
         $this->plugin = $plugin;
     }
@@ -164,7 +165,6 @@ class ilCronStatusMonitorCronJob extends ilCronJob
         $crashed_jobs_string = implode(", ", array_keys($crashed_jobs));
         $message = $this->plugin->txt("email_message") . ": " . $crashed_jobs_string;
 
-        include_once("./Customizing/global/plugins/Services/Cron/CronHook/CronStatusMonitor/classes/class.ilCronStatusMonitorSettings.php");
         $setting = new ilCronStatusMonitorSettings();
         $users = $setting->get("email_recipient");
 
@@ -179,7 +179,6 @@ class ilCronStatusMonitorCronJob extends ilCronJob
         }
          */
 
-        include_once "./Services/Mail/classes/class.ilMail.php";
         $ntf = new ilMail($sender);
         $ntf->enqueue(
             $users,

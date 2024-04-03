@@ -17,7 +17,6 @@
  ********************************************************************
  */
 
-include_once("./Services/Cron/classes/class.ilCronHookPlugin.php");
 
 /**
  * Class ilCronStatusMonitorPlugin
@@ -25,29 +24,22 @@ include_once("./Services/Cron/classes/class.ilCronHookPlugin.php");
  */
 class ilCronStatusMonitorPlugin extends ilCronHookPlugin
 {
-    private static $instance = null;
+    private static ?ilCronStatusMonitorPlugin $instance = null;
 
-    const CTYPE = "Services";
-    const CNAME = "Cron";
-    const SLOT_ID = "crnhk";
     const PNAME = "CronStatusMonitor";
+    const PLUGIN_ID = "cronstatusmonitor";
 
-    /**
-     * Get singleton instance
-     */
-    public static function getInstance() : ilPlugin
+    public static function getInstance(): ilCronStatusMonitorPlugin
     {
-        global $ilPluginAdmin;
-        if (self::$instance) {
+        global $DIC;
+        if (isset(self::$instance)) {
             return self::$instance;
         }
-        include_once "./Services/Component/classes/class.ilPluginAdmin.php";
-        return self::$instance = ilPluginAdmin::getPluginObject(
-            self::CTYPE,
-            self::CNAME,
-            self::SLOT_ID,
-            self::PNAME
-        );
+        /** @var ilComponentFactory $component_factory */
+        $component_factory = $DIC["component.factory"];
+        /** @var ilCronStatusMonitorPlugin $plugin */
+        $plugin = $component_factory->getPlugin(self::PLUGIN_ID);
+        return $plugin;
     }
 
     public function getPluginName() : string
@@ -57,14 +49,12 @@ class ilCronStatusMonitorPlugin extends ilCronHookPlugin
 
     public function getCronJobInstances() : array
     {
-        include_once "class.ilCronStatusMonitorCronJob.php";
         $job = new ilCronStatusMonitorCronJob($this);
         return array($job);
     }
 
-    public function getCronJobInstance($a_job_id) : ilCronStatusMonitorCronJob
+    public function getCronJobInstance(string $jobId) : ilCronStatusMonitorCronJob
     {
-        include_once "class.ilCronStatusMonitorCronJob.php";
         return new ilCronStatusMonitorCronJob($this);
     }
 

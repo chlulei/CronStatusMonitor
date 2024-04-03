@@ -23,8 +23,8 @@
  */
 class ilCronStatusMonitorSettings
 {
-    protected $db;
-    public $setting = array();
+    protected ilDBInterface $db;
+    public array $setting = [];
 
     public function __construct()
     {

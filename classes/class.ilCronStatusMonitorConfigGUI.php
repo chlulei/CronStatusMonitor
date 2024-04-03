@@ -17,20 +17,33 @@
  ********************************************************************
  */
 
-include_once("./Services/Component/classes/class.ilPluginConfigGUI.php");
 
 /**
+ * @ilCtrl_isCalledBy ilCronStatusMonitorConfigGUI: ilObjComponentSettingsGUI
+ *
  * Class ilCronStatusMonitorConfigGUI
  * @author Thomas Famula <famula@leifos.de>
  */
 class ilCronStatusMonitorConfigGUI extends ilPluginConfigGUI
 {
+    protected ilGlobalTemplateInterface $tpl;
+    protected ilCtrl $ctrl;
+    protected ilLanguage $lng;
+
+    public function __construct()
+    {
+        global $DIC;
+        $this->tpl = $DIC->ui()->mainTemplate();
+        $this->ctrl = $DIC->ctrl();
+        $this->lng = $DIC->language();
+    }
+
     /**
      * @param string $cmd
      *
      * Handles all commands, default is "configure"
      */
-    public function performCommand($cmd) : void
+    public function performCommand(string $cmd) : void
     {
         switch ($cmd) {
             default:
@@ -53,19 +66,15 @@ class ilCronStatusMonitorConfigGUI extends ilPluginConfigGUI
 
     public function initConfigurationForm() : ilPropertyFormGUI
     {
-        global $ilCtrl, $lng;
-
         //create the form
-        include_once("./Services/Form/classes/class.ilPropertyFormGUI.php");
         $form = new ilPropertyFormGUI();
-        $form->setFormAction($ilCtrl->getFormAction($this));
+        $form->setFormAction($this->ctrl->getFormAction($this));
         $form->setTitle($this->getPluginObject()->txt("gui_title"));
 
         //add button
-        $form->addCommandButton("save", $lng->txt("save"));
+        $form->addCommandButton("save", $this->lng->txt("save"));
 
         //text input
-        include_once("./Customizing/global/plugins/Services/Cron/CronHook/CronStatusMonitor/classes/class.ilCronStatusMonitorSettings.php");
         $setting = new ilCronStatusMonitorSettings();
         $text = new ilTextInputGUI($this->getPluginObject()->txt("email_recipient"), "email_recipient");
         $text->setValue($setting->get("email_recipient"));
@@ -78,18 +87,17 @@ class ilCronStatusMonitorConfigGUI extends ilPluginConfigGUI
 
     public function save() : void
     {
-        global $lng, $ilCtrl;
         $form = $this->initConfigurationForm();
-
         if ($form->checkInput()) {
-            include_once("./Customizing/global/plugins/Services/Cron/CronHook/CronStatusMonitor/classes/class.ilCronStatusMonitorSettings.php");
             $setting = new ilCronStatusMonitorSettings();
             $setting->setList($form->getInput("email_recipient"));
-            ilUtil::sendSuccess($lng->txt("settings_saved"), true);
-            $ilCtrl->redirect($this, "configure");
+            $this->tpl->setOnScreenMessage(
+                ilGlobalTemplateInterface::MESSAGE_TYPE_SUCCESS,
+                $this->lng->txt("settings_saved"),
+                true
+            );
+            $this->ctrl->redirect($this, "configure");
         }
-
-        //$form->setValuesByPost();
         $this->configure($form);
     }
 }
